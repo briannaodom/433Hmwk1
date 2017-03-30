@@ -23,11 +23,11 @@
 #pragma config FWDTWINSZ = 11 // wdt window at 25% //0b11?
 
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
-#pragma config FPLLIDIV = x // divide input clock to be in range 4-5MHz
-#pragma config FPLLMUL = x // multiply clock after FPLLIDIV
-#pragma config FPLLODIV = x // divide clock after FPLLMUL to get 48MHz
-#pragma config UPLLIDIV = x // divider for the 8MHz input clock, then multiplied by 12 to get 48MHz for USB
-#pragma config UPLLEN = x // USB clock on
+#pragma config FPLLIDIV = 0b001 // divide input clock to be in range 4-5MHz; resonater 8MHZ so divide by 2
+#pragma config FPLLMUL = 0b111 // multiply clock after FPLLIDIV; used highest mult
+#pragma config FPLLODIV = 0b001 // divide clock after FPLLMUL to get 48MHz
+#pragma config UPLLIDIV = 0b001  // divider for the 8MHz input clock, then multiplied by 12 to get 48MHz for USB
+#pragma config UPLLEN = 0 // USB clock on (enabled)
 
 // DEVCFG3
 #pragma config USERID = 0 // some 16bit userid, doesn't matter what
