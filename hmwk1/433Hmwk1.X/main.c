@@ -34,8 +34,9 @@
 #pragma config PMDL1WAY = 0 // allow multiple reconfigurations
 #pragma config IOL1WAY = 0 // allow multiple reconfigurations
 #pragma config FUSBIDIO = 1 // USB pins controlled by USB module
-#pragma config FVBUSONIO = 1 // USB BUSON controlled by USB module
+#pragma config FVBUSONIO = 1 // USB BUSON controlled by USB module 
 
+#define DELAY 20000
 
 int main() {
 
@@ -60,16 +61,20 @@ int main() {
     //LATAbits.LATA4 = 1;
     __builtin_enable_interrupts();
     
-    int j = 0;
+    _CPO_SET_COUNT(0);
 
     while(1) {
-    
-       LATA = 0xFFFF;
-       for(j=0; j<10000; j++);
-       LATA = 0x0000;
-       for(j=0; j<10000; j++);
        
 	    // use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 		  // remember the core timer runs at half the sysclk
-  }
-}
+        _CPO_SET_COUNT(0);
+        while (_CPO_GET_COUNT() < DELAY){
+            while(!PORTBbits.RB4){
+                LATA = 0x0000;
+            }
+        }
+        LATINV = 0x0010;
+              ;
+            }
+    return 0;
+ }
