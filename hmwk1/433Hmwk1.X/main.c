@@ -57,7 +57,7 @@ int main() {
     // do your TRIS and LAT commands here
     TRISA = 0x0000; //TRISAbits.TRISA4 = 0;
     TRISB = 0xFFFF; //TRISBbits.TRISB4 = 1;
-   
+    LATA = 0xFFFF;
     //LATAbits.LATA4 = 1;
     __builtin_enable_interrupts();
     
