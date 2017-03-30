@@ -10,17 +10,17 @@
 #pragma config CP = 1 // no code protect
 
 // DEVCFG1
-#pragma config FNOSC = x // use primary oscillator with pll
-#pragma config FSOSCEN = x // turn off secondary oscillator
-#pragma config IESO = x // no switching clocks
-#pragma config POSCMOD = x // high speed crystal mode
-#pragma config OSCIOFNC = x // disable secondary osc
-#pragma config FPBDIV = x // divide sysclk freq by 1 for peripheral bus clock
-#pragma config FCKSM = x // do not enable clock switch
-#pragma config WDTPS = x // use slowest wdt
-#pragma config WINDIS = x // wdt no window mode
-#pragma config FWDTEN = x // wdt disabled
-#pragma config FWDTWINSZ = x // wdt window at 25%
+#pragma config FNOSC = 0b011  // use primary oscillator with pll
+#pragma config FSOSCEN = 0  // turn off secondary oscillator (disabled)
+#pragma config IESO =  0 // no switching clocks (disabled)
+#pragma config POSCMOD = 0b10 // high speed crystal mode
+#pragma config OSCIOFNC = 1  // disable secondary osc
+#pragma config FPBDIV = 0b00 // divide sysclk freq by 1 for peripheral bus clock
+#pragma config FCKSM =  0b11 // do not enable clock switch
+#pragma config WDTPS = 0b10100 // use slowest wdt
+#pragma config WINDIS = 1 // wdt no window mode
+#pragma config FWDTEN = 0 // wdt disabled
+#pragma config FWDTWINSZ = 11 // wdt window at 25% //0b11?
 
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
 #pragma config FPLLIDIV = x // divide input clock to be in range 4-5MHz
