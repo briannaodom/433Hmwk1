@@ -20,10 +20,10 @@
 #pragma config WDTPS = 0b10100 // use slowest wdt
 #pragma config WINDIS = 1 // wdt no window mode
 #pragma config FWDTEN = 0 // wdt disabled
-#pragma config FWDTWINSZ = 0b11 // wdt window at 25% //0b11?
+#pragma config FWDTWINSZ = 0b11 // wdt window at 25% 
 
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
-#pragma config FPLLIDIV = 0xb001 // divide input clock to be in range 4-5MHz; resonater 8MHZ so divide by 2
+#pragma config FPLLIDIV = DIV_2 // divide input clock to be in range 4-5MHz; resonater 8MHZ so divide by 2
 #pragma config FPLLMUL = 0b111 // multiply clock after FPLLIDIV; used highest mult
 #pragma config FPLLODIV = 0b001 // divide clock after FPLLMUL to get 48MHz
 #pragma config UPLLIDIV = 0b001  // divider for the 8MHz input clock, then multiplied by 12 to get 48MHz for USB
@@ -55,20 +55,20 @@ int main() {
     DDPCONbits.JTAGEN = 0;
 
     // do your TRIS and LAT commands here
-    TRISA = 0x0000; //TRISAbits.TRISA4 = 0;
-    TRISB = 0xFFFF; //TRISBbits.TRISB4 = 1;
-    LATA = 0xFFFF;
-    //LATAbits.LATA4 = 1;
+    TRISA = 0x0000; //TRISAbits.TRISA4 = 0; 
+    TRISB = 0xFFFF; //TRISBbits.TRISB4 = 1;  
+    LATA = 0xFFFF; //LATAbits.LATA4 = 1;
+    
     __builtin_enable_interrupts();
     
-    _CPO_SET_COUNT(0);
+    _CP0_SET_COUNT(0);
 
     while(1) {
        
 	    // use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 		  // remember the core timer runs at half the sysclk
-        _CPO_SET_COUNT(0);
-        while (_CPO_GET_COUNT() < DELAY){
+        _CP0_SET_COUNT(0);
+        while (_CP0_GET_COUNT() < DELAY){
             while(!PORTBbits.RB4){
                 LATA = 0x0000;
             }
