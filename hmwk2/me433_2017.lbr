@@ -11467,27 +11467,15 @@ This footprint was designed to help hold the alignment of a through-hole compone
 &lt;p&gt;USB-MB-H has not been used/tested
 &lt;P&gt;USB-MICROB has been used. CONN-09505</description>
 <gates>
-<gate name="G$1" symbol="USB" x="0" y="0"/>
+<gate name="G$1" symbol="USB" x="0" y="2.54"/>
 </gates>
 <devices>
 <device name="OLD" package="USB-MINIB-OLD">
-<connects>
-<connect gate="G$1" pin="D+" pad="D+"/>
-<connect gate="G$1" pin="D-" pad="D-"/>
-<connect gate="G$1" pin="GND" pad="GND"/>
-<connect gate="G$1" pin="VBUS" pad="VBUS"/>
-</connects>
 <technologies>
 <technology name=""/>
 </technologies>
 </device>
 <device name="-JST-2MM-SMT" package="S4B-PH">
-<connects>
-<connect gate="G$1" pin="D+" pad="1"/>
-<connect gate="G$1" pin="D+1" pad="2"/>
-<connect gate="G$1" pin="D-" pad="3"/>
-<connect gate="G$1" pin="GND" pad="4"/>
-</connects>
 <technologies>
 <technology name="">
 <attribute name="PROD_ID" value="CONN-08193" constant="no"/>
@@ -11495,12 +11483,6 @@ This footprint was designed to help hold the alignment of a through-hole compone
 </technologies>
 </device>
 <device name="SMD" package="USB-MINIB">
-<connects>
-<connect gate="G$1" pin="D+" pad="D+"/>
-<connect gate="G$1" pin="D-" pad="D-"/>
-<connect gate="G$1" pin="GND" pad="GND"/>
-<connect gate="G$1" pin="VBUS" pad="VBUS"/>
-</connects>
 <technologies>
 <technology name="">
 <attribute name="PROD_ID" value="CONN-08193" constant="no"/>
@@ -11508,23 +11490,11 @@ This footprint was designed to help hold the alignment of a through-hole compone
 </technologies>
 </device>
 <device name="-SMD-NS" package="USB-MINIB-NOSTOP">
-<connects>
-<connect gate="G$1" pin="D+" pad="D+"/>
-<connect gate="G$1" pin="D-" pad="D-"/>
-<connect gate="G$1" pin="GND" pad="GND"/>
-<connect gate="G$1" pin="VBUS" pad="VBUS"/>
-</connects>
 <technologies>
 <technology name=""/>
 </technologies>
 </device>
 <device name="-MICROB" package="USB-MICROB">
-<connects>
-<connect gate="G$1" pin="D+" pad="D+"/>
-<connect gate="G$1" pin="D-" pad="D-"/>
-<connect gate="G$1" pin="GND" pad="GND MT1 MT2"/>
-<connect gate="G$1" pin="VBUS" pad="VBUS"/>
-</connects>
 <technologies>
 <technology name="">
 <attribute name="PROD_ID" value="CONN-09505"/>
@@ -11533,7 +11503,7 @@ This footprint was designed to help hold the alignment of a through-hole compone
 </device>
 <device name="" package="USB-MB-H">
 <connects>
-<connect gate="G$1" pin="D+1" pad="D+"/>
+<connect gate="G$1" pin="D+" pad="D+"/>
 <connect gate="G$1" pin="D-" pad="D-"/>
 <connect gate="G$1" pin="GND" pad="GND"/>
 <connect gate="G$1" pin="ID" pad="ID"/>
