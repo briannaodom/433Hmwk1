@@ -18828,6 +18828,11 @@ Source: AVX .. aphvc.pdf</description>
 <pinref part="GND16" gate="1" pin="GND"/>
 <wire x1="12.7" y1="132.08" x2="17.78" y2="132.08" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="U$3" gate="G$1" pin="1.GND"/>
+<pinref part="GND5" gate="1" pin="GND"/>
+<wire x1="134.62" y1="111.76" x2="134.62" y2="109.22" width="0.1524" layer="91"/>
+</segment>
 </net>
 <net name="N$2" class="0">
 <segment>
