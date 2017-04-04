@@ -36,7 +36,7 @@
 #pragma config FUSBIDIO = 1 // USB pins controlled by USB module
 #pragma config FVBUSONIO = 1 // USB BUSON controlled by USB module 
 
-#define DELAY 20000
+#define DELAY 12000 //.5 ms
 
 int main() {
 
@@ -57,7 +57,7 @@ int main() {
     // do your TRIS and LAT commands here
     TRISAbits.TRISA4 = 0; //TRISA = 0x0000; for LED as output
     TRISBbits.TRISB4 = 1; //TRISB = 0xFFFF; for PUSHBUTTON as input
-    LATAbits.LATA4 = 1; //LATA = 0xFFFF; for LED on
+    LATAbits.LATA4 = 1; //LATA = 0xFFFF; for green LED on
     
     __builtin_enable_interrupts();
     
@@ -70,9 +70,9 @@ int main() {
         _CP0_SET_COUNT(0);
         while (_CP0_GET_COUNT() < DELAY){
             while(!PORTBbits.RB4){
-                LATAbits.LATA4 = 0; //LATA = 0x0000;
+                LATAbits.LATA4 = 0; //LATA = 0x0000; Led off when pressed
             }
         }
-        LATAINV = 0x0010;  // LATAINV = 0b10000
+        LATAINV = 0x0010;  // LATAINV = 0b10000; toggle green LED
     }
 }
