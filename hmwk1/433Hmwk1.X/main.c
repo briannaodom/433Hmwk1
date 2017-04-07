@@ -46,10 +46,10 @@ int main() {
     __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
 
     // 0 data RAM access wait states
-   BMXCONbits.BMXWSDRM = 0x0;
+    BMXCONbits.BMXWSDRM = 0x0;
 
     // enable multi vector interrupts
-   INTCONbits.MVEC = 0x1;
+    INTCONbits.MVEC = 0x1;
 
     // disable JTAG to get pins back
     DDPCONbits.JTAGEN = 0;
@@ -64,7 +64,7 @@ int main() {
     _CP0_SET_COUNT(0);
 
     while(1) {
-       
+        
 	    // use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
 		  // remember the core timer runs at half the sysclk
         _CP0_SET_COUNT(0);
@@ -75,4 +75,5 @@ int main() {
         }
         LATAINV = 0x0010;  // LATAINV = 0b10000; toggle green LED
     }
+    return 0;
 }
