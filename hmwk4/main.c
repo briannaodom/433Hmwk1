@@ -38,6 +38,24 @@
 
 #define DELAY 12000 //.5 ms
 
+void setVoltage(char c, char c);
+char SPI1(char w);
+
+void initSPI1(void){
+    CS = 1;                     // chip is not selected
+    SPI1CONbits.ON = 0;         // before setting params, SPI1 turned off 
+    SPI1BUF;                    // rx buffer cleared thru reading
+    SPI1CONbits.ENHBUF = 0;     // enhanced buffer mode turned off
+    SPI1BRG = 1;                // SPI1 clock runs at 12 MHz
+    SPI1CONbits.MSTEN = 1;      // master op.
+    SPI1CONbits.MODE32 = 0;     // 16 bits of data sent/transfer
+    SPI1CONbits.MODE16 = 1;     // 16 bits of data sent/transfer        
+    SPI1STATbits.SPIROV = 0;    // overflow bit cleared      
+    SPI1CONbits.CKE = 1;        // clock high to low, data changes
+    SPI1CONbits.ON = 1;         // after setting params, SPI1 turned on
+    LATAbits.LATA4 = 1;         // use LED1 to show it worked
+}
+
 int main() {
 
     __builtin_disable_interrupts();
@@ -57,11 +75,22 @@ int main() {
     // do your TRIS and LAT commands here
     TRISAbits.TRISA4 = 0; //TRISA = 0x0000; for LED as output
     TRISBbits.TRISB4 = 1; //TRISB = 0xFFFF; for PUSHBUTTON as input
+    TRISBbits.TRISB7 = 0; //SS1 set to pin B7 (output)
+    TRISBbits.TRISB8 = 0; //SD01 set to pin B8 (output)
+    TRISBbits.TRISB11 = 1; //SDI1 set to pin B11 (input)
+    TRISBbits.TRISB14 = 0; //SPI1 set to pin B14 (output)
+    
     LATAbits.LATA4 = 1; //LATA = 0xFFFF; for green LED on
+    
+    RPB7Rbits.RPB7R = 0b0011; //SS1 connected to pin B7 (output)
+    RPB8Rbits.RPB8R = 0b0011; //SDO1 conntected to pin B8 (output)
+    SDI1Rbits.SDI1R = 0b0000; //SDI1 connected to pin B11 (input)
     
     __builtin_enable_interrupts();
     
     _CP0_SET_COUNT(0);
+    
+    initSPI1();
 
     while(1) {
         
@@ -76,4 +105,14 @@ int main() {
         LATAINV = 0x0010;  // LATAINV = 0b10000; toggle green LED
     }
     return 0;
+}
+
+    void setVoltage(char channel, char voltage){
+}
+
+    char SPI1(char write){
+        SPI1BUF = write;
+        while (!SPI1STATSbits.SPIRBF){ ;
+        }
+        return SPI1BUF;
 }
