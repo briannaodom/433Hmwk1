@@ -50,7 +50,7 @@ unsigned char SPI_IO(unsigned char write) {
 
 void INIT_SPI(void){
     
-    TRISAbits.TRISA4 = 0;     //turn LED1 off
+    TRISAbits.TRISA4 = 0;     //set SD1 to pin A4
     CS = 1;                   //chip no selected
     SPI1CONbits.ON = 0;       //turn off SPI module and reset it
     SPI1BUF;                  //Clear the rx buffer by reading from it
