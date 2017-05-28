@@ -84,7 +84,7 @@ void i2c_master_stop(void) {          // send a STOP:
   while(I2C2CONbits.PEN) { ; }        // wait for STOP to complete
 }
 
-void initExpander() {
+void expanderInit() {
     i2c_master_setup(); // setup I2C2 at 100 kHz
 
     // init GP0-3 as outputs
@@ -96,7 +96,7 @@ void initExpander() {
     i2c_master_stop();  // STOP bit
 }
 
-void setExpander(char pin, char level) { // write to expander
+void expanderSet(char pin, char level) { // write to expander
     i2c_master_start();
     i2c_master_send(SLAVE_ADDR << 1); // hardware address and write bit
     i2c_master_send(0x0A); // LAT register = 0x0A
@@ -104,7 +104,7 @@ void setExpander(char pin, char level) { // write to expander
     i2c_master_stop();
 }
 
-char getExpander() {
+char expanderGet() {
     char level;
     i2c_master_start();
     i2c_master_send((SLAVE_ADDR << 1)); // hardware address and write bit
@@ -123,17 +123,11 @@ int main() {
     // set the CP0 CONFIG register to indicate that kseg0 is cacheable (0x3)
     __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
 
-    // 0 data RAM access wait states
-    BMXCONbits.BMXWSDRM = 0x0;
-
-    // enable multi vector interrupts
-    INTCONbits.MVEC = 0x1;
-
-    // disable JTAG to get pins back
-    DDPCONbits.JTAGEN = 0;
-
-    // Turn off AN2 and AN3 pins (make B2 and B3 available for I2C)
-    ANSELBbits.ANSB2 = 0;
+    BMXCONbits.BMXWSDRM = 0x0;   // 0 data RAM access wait states
+    
+    INTCONbits.MVEC = 0x1; // enable multi vector interrupts
+    DDPCONbits.JTAGEN = 0;    // disable JTAG to get pins back
+    ANSELBbits.ANSB2 = 0;   // Turn off AN2 and AN3 pins (make B2 and B3 available for I2C)
     ANSELBbits.ANSB3 = 0;
 
     // do your TRIS and LAT commands here
@@ -143,8 +137,8 @@ int main() {
     TRISBbits.TRISB4 = 1; // Pin 4 of Port B is USER button (input)
     LATAbits.LATA4 = 1; // Turn LED2 ON
 
-    initExpander();
-    setExpander(0,1); // turn on LED connected to GP0
+    expanderInit();
+    expanderSet(0,1); // turn on LED connected to GP0
 
     __builtin_enable_interrupts();
 
@@ -152,9 +146,9 @@ int main() {
     while(_CP0_GET_COUNT() < 48000000) {} // wait 1 second
     while(1) {
         LATAbits.LATA4 = 1; // turn on LED1; USER button is low (FALSE) if pressed.
-        setExpander(0,0); // turn off LED connected to GP0 of MCP23008
-        while((getExpander()>>7)) { // button is on GP7, so shift 7 bits to the right.
-            setExpander(0,1); // turn on LED connected to GP7 of MCP23008
+        expanderSet(0,0); // turn off LED connected to GP0 of MCP23008
+        while((expanderGet()>>7)) { // button is on GP7, so shift 7 bits to the right.
+            expanderSet(0,1); // turn on LED connected to GP7 of MCP23008
         }
     }
     return 0;
