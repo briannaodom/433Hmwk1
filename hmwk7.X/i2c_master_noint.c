@@ -1,16 +1,12 @@
-#include<xc.h>           // processor SFR definitions
+#include <proc/p32mx250f128b.h>
 #include "i2c_master_noint.h"
 
-// I2C Master utilities, 100 kHz, using polling rather than interrupts
-// The functions must be called in the correct order as per the I2C protocol
-// Change I2C1 to the I2C channel you are using (I2C2)
-// I2C pins need pull-up resistors, 2k-10k
-
 void i2c_master_setup(void) {
-  I2C2BRG = 233;            // I2C2BRG = [1/(2*Fsck) - PGD]*Pblck - 2, BRG = 233 --> Fsck = 100 kHz, 23993 --> 1 kHz
-                                    // T_PGD = 104 ns
-  I2C2CONbits.ON = 1;               // turn on the I2C2 module
-  
+    
+  ANSELBbits.ANSB2 = 0;
+  ANSELBbits.ANSB3 = 0;  
+  I2C2BRG = 233;            // I2CBRG = [1/(2*Fsck) - PGD]*Pblck - 2               
+  I2C2CONbits.ON = 1;               // turn on the I2C1 module
 }
 
 // Start a transmission on the I2C bus
@@ -19,8 +15,8 @@ void i2c_master_start(void) {
     while(I2C2CONbits.SEN) { ; }    // wait for the start bit to be sent
 }
 
-void i2c_master_restart(void) {
-    I2C2CONbits.RSEN = 1;           // send a restart
+void i2c_master_restart(void) {     
+    I2C2CONbits.RSEN = 1;           // send a restart 
     while(I2C2CONbits.RSEN) { ; }   // wait for the restart to clear
 }
 
