@@ -66,7 +66,7 @@ static const char ASCII[96][5] = {
 ,{0x07, 0x08, 0x70, 0x08, 0x07} // 59 Y
 ,{0x61, 0x51, 0x49, 0x45, 0x43} // 5a Z
 ,{0x00, 0x7f, 0x41, 0x41, 0x00} // 5b [
-,{0x02, 0x04, 0x08, 0x10, 0x20} // 5c ¥
+,{0x02, 0x04, 0x08, 0x10, 0x20} // 5c Â¥
 ,{0x00, 0x41, 0x41, 0x7f, 0x00} // 5d ]
 ,{0x04, 0x02, 0x01, 0x02, 0x04} // 5e ^
 ,{0x40, 0x40, 0x40, 0x40, 0x40} // 5f _
@@ -162,13 +162,13 @@ static const char ASCII[96][5] = {
 #define	RED       0xF800
 #define	GREEN     0x07E0
 #define CYAN      0x07FF
+#define BACKGROUND 0x07FF//CYAN
 #define MAGENTA   0xF81F
 #define YELLOW    0xFFE0
 
 static unsigned char pGammaSet[15]= {0x36,0x29,0x12,0x22,0x1C,0x15,0x42,0xB7,0x2F,0x13,0x12,0x0A,0x11,0x0B,0x06};
 static unsigned char nGammaSet[15]= {0x09,0x16,0x2D,0x0D,0x13,0x15,0x40,0x48,0x53,0x0C,0x1D,0x25,0x2E,0x34,0x39};
 
-void SPI1_init(void);
 unsigned char spi_io(unsigned char); // send and rx a byte over spi
 void LCD_command(unsigned char); // send a command to the LCD
 void LCD_data(unsigned char); // send data to the LCD
@@ -177,5 +177,10 @@ void LCD_init(void); // send the initializations to the LCD
 void LCD_drawPixel(unsigned short, unsigned short, unsigned short); // set the x,y pixel to a color
 void LCD_setAddr(unsigned short, unsigned short, unsigned short, unsigned short); // set the memory address you are writing to
 void LCD_clearScreen(unsigned short); // set the color of every pixel
+void LCD_writeByte(unsigned short, unsigned short, unsigned short, unsigned short);
+void LCD_writeChar(char, unsigned short, unsigned short, unsigned short);
+void LCD_writeString(char *, unsigned short, unsigned short, unsigned short);
+void LCD_drawBar(int, unsigned short, unsigned short, unsigned short);
+
 
 #endif
