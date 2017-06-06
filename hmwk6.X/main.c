@@ -1,15 +1,48 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
-#include<stdio.h>   // needed to use sprintf()
-#include"picConfig.h" // contains DEVCFGx commands
-#include"ILI9163C.h"
-#include"TFTLCD.h" // custom library
+#include "ILI9163C.h"
+#include <stdio.h>
 
-#define DELAYTIME 4000000 // 40000 yields 0.001 s delay time when using Core Timer
-#define CS LATBbits.LATB7  // SPI chip select pin
-#define STRLEN 19   // maximum number of characters per string
+
+#pragma config DEBUG = OFF // no debugging
+#pragma config JTAGEN = OFF // no jtag
+#pragma config ICESEL = ICS_PGx1 // use PGED1 and PGEC1
+#pragma config PWP = OFF // no write protect
+#pragma config BWP = OFF // no boot write protect
+#pragma config CP = OFF // no code protect
+
+// DEVCFG1
+#pragma config FNOSC = PRIPLL // use primary oscillator with pll
+#pragma config FSOSCEN = OFF // turn off secondary oscillator
+#pragma config IESO = OFF // no switching clocks
+#pragma config POSCMOD = HS // high speed crystal mode
+#pragma config OSCIOFNC = OFF // free up secondary osc pins
+#pragma config FPBDIV = DIV_1 // divide CPU freq by 1 for peripheral bus clock
+#pragma config FCKSM = CSDCMD // do not enable clock switch
+#pragma config WDTPS = PS1 // slowest wdt
+#pragma config WINDIS = OFF // no wdt window
+#pragma config FWDTEN = OFF // wdt off by default
+#pragma config FWDTWINSZ = WINSZ_25 // wdt window at 25%
+
+// DEVCFG2 - get the CPU clock to 48MHz
+#pragma config FPLLIDIV = DIV_2 // divide input clock to be in range 4-5MHz
+#pragma config FPLLMUL = MUL_24 // multiply clock after FPLLIDIV
+#pragma config FPLLODIV = DIV_2 // divide clock after FPLLMUL to get 48MHz
+#pragma config UPLLIDIV = DIV_2 // divider for the 8MHz input clock, then multiply by 12 to get 48MHz for USB
+#pragma config UPLLEN = ON // USB clock on
+
+// DEVCFG3
+#pragma config USERID = 0 // some 16bit userubmit the link to your repid, doesn't matter what
+#pragma config PMDL1WAY = OFF // allow multiple reconfigurations
+#pragma config IOL1WAY = OFF // allow multiple reconfigurations
+#pragma config FUSBIDIO = ON // USB pins controlled by USB module
+#pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
+
 
 int main() {
+    
+    //char buffer[100];    
+
     __builtin_disable_interrupts();
 
     // set the CP0 CONFIG register to indicate that kseg0 is cacheable (0x3)
@@ -23,51 +56,44 @@ int main() {
 
     // disable JTAG to get pins back
     DDPCONbits.JTAGEN = 0;
+            
+    SPI1_init(); //Initialize the SPI communication
+    LCD_init(); //Initialize LCD
+       
+    __builtin_enable_interrupts();          
+
+    LCD_clearScreen(CYAN);
     
-    // Turn off AN2 and AN3 pins (make B2 and B3 available for I2C)
-    ANSELBbits.ANSB2 = 0;
-    ANSELBbits.ANSB3 = 0;
-
-    // do your TRIS and LAT commands here
-    TRISAbits.TRISA0 = 0; // pin 0 of Port A is CS (chip select) (output)
-    TRISAbits.TRISA1 = 1; // pin 1 of Port A is SDO1 (output)
-    TRISAbits.TRISA4 = 0; // Pin 4 of Port A is LED1 (output)
-    TRISBbits.TRISB4 = 1; // Pin 4 of Port B is USER button (input)
-    LATAbits.LATA4 = 1; // Turn LED2 ON
+    char buffer[50];
+    int counter = 0;
+    int frames = 0;
+    float FPS = 0;
+    int time = _CP0_GET_COUNT();
+    int frame_time = _CP0_GET_COUNT();
     
-    SPI1_init();
-    LCD_init();
-    LCD_clearScreen(BACKGROUND);
     
-    char progress;
-    char outbuf[STRLEN];
-    float fps = 1.0;
-
-    __builtin_enable_interrupts();
-
-    _CP0_SET_COUNT(0);
-    while(1) {
-        for (progress=0; progress < 101; progress++) {
-            _CP0_SET_COUNT(0);
-            
-            sprintf(outbuf,"Hello World %d!",progress);
-            LCD_drawString(28, 32, outbuf, TEXTCOLOR);
-            
-            LCD_progressBar(15,70,progress,GREEN,RED);
-            
-            sprintf(outbuf,"FPS: %5.2f",fps);
-            LCD_drawString(28,100,outbuf,TEXTCOLOR);
-            
-           fps = 24000000.0/_CP0_GET_COUNT();
-
-            LATAbits.LATA4 = 1; // turn on LED1; USER button is low (FALSE) if pressed.
-            while(!PORTBbits.RB4) { // button is on GP7, so shift 7 bits to the right.
-                LATAbits.LATA4 = 0;
-            }
-            
-            while(_CP0_GET_COUNT() < (48000000/2/5)) {} // 0.2 ms delay = 5 Hz timer
+    while(1) {   
+        
+        sprintf(buffer,"Hello World! %d  ",counter);
+        counter ++;
+        LCD_writeString(buffer,110,96,BLACK); //print hello world string
+        LCD_drawBar(counter, 110, 75,BLACK); // Print bar
+        sprintf(buffer,"FPS: %.2f  ",FPS);
+        LCD_writeString(buffer,90,60,RED);// print FPS
+        frames ++;
+        
+        if (counter == 101) { // if 100 go back to 0
+            counter = 0;            
         }
-        LCD_clearScreen(BACKGROUND); // use this function sparingly!
+        
+        FPS = ((float) frames)*24000000/(_CP0_GET_COUNT() - frame_time); // find the FPS 
+        frames = 0;
+        frame_time = _CP0_GET_COUNT();
+        
+        while(_CP0_GET_COUNT() < time + 48000000/10) {;}  //Maintain it at 5Hz      
+        time = _CP0_GET_COUNT();
     }
+    
     return 0;
 }
+
