@@ -18,6 +18,7 @@
 
 void SPI1_init() {
 	SDI1Rbits.SDI1R = 0b0100; // B8 is SDI1
+    ANSELAbits.ANSA1 = 0;
     RPA1Rbits.RPA1R = 0b0011; // A1 is SDO1
     TRISBbits.TRISB7 = 0; // SS is B7
     LATBbits.LATB7 = 1; // SS starts high
@@ -26,7 +27,7 @@ void SPI1_init() {
     ANSELBbits.ANSB15 = 0;
     TRISBbits.TRISB15 = 0;
     LATBbits.LATB15 = 0;
-
+	
 	SPI1CON = 0; // turn off the spi module and reset it
     SPI1BUF; // clear the rx buffer by reading from it
     SPI1BRG = 1; // baud rate to 12 MHz [SPI1BRG = (48000000/(2*desired))-1]
@@ -189,3 +190,55 @@ void LCD_clearScreen(unsigned short color) {
 			LCD_data16(color);
 		}
 }
+
+void LCD_writeByte(unsigned short byte, unsigned short x, unsigned short y, unsigned short color) {
+    int i;
+    for (i = 0;i < 8; i++) {
+        if (y < 128 && y > 8) {
+            //first we need to grab the bit 
+            unsigned short pixel = (byte >> i) & 1;
+            if (!pixel) {//then the location is empty
+                LCD_drawPixel(x,y - i,BACKGROUND);           
+            }
+            else {
+                LCD_drawPixel(x,y - i,color);
+            }
+        }
+        
+    }
+}
+
+void LCD_writeChar(char letter, unsigned short x, unsigned short y, unsigned short color) {
+    //each letter takes up 5 spaces
+    int i;
+    for (i = 0;i < 5; i++) {
+        if (x > 5 && x < 128) {
+            LCD_writeByte(ASCII[letter - 0x20][i],x - i,y,color);            
+        }        
+    }
+    
+}
+
+void LCD_writeString(char *inputStr, unsigned short x, unsigned short y, unsigned short color) {
+    int counter = 0;
+    while(inputStr[counter] != 0) {
+        LCD_writeChar(inputStr[counter], (x - 5*counter - counter), y, color);
+        counter ++;
+    }
+}
+
+void LCD_drawBar(int number, unsigned short x, unsigned short y, unsigned short color) {
+    //Let's make the bar height 4 pixels
+    unsigned short height = 0x0F;
+    int i;
+    for (i = 0;i <= 100; i++) {
+        if (i <= number) {
+            LCD_writeByte(height,x - i, y, color);
+        }
+        else 
+        {
+            LCD_writeByte(0x00, x - i, y, color);
+        }
+    }
+}
+Contact GitHub API Training Shop Blog About
