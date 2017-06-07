@@ -1,5 +1,5 @@
 #include <proc/p32mx250f128b.h>
-#include "i2c_master_noint.h"
+#include "i2c_master_noint2.h"
 
 void i2c_master_setup(void) {
     

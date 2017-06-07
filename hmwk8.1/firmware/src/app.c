@@ -54,8 +54,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 
 #include "app.h"
-#include "i2c_master_noint.h"
-#include "ILI9163C.h"
+#include "i2c_master_noint2.h"
+#include "ILI9163C2.h"
 #include <stdio.h>
 #define SLAVE_ADDR 0b1101010
 
@@ -236,7 +236,7 @@ void APP_Initialize ( void )
 void APP_Tasks ( void )
 {
 
-    /* Check the application's current state. */
+     /* Check the application's current state. */
     switch ( appData.state )
     {
         /* Application's initial state. */
@@ -254,8 +254,14 @@ void APP_Tasks ( void )
         }
 
         case APP_STATE_SERVICE_TASKS:
-        {
-        
+        {                        
+            int time;
+            time = _CP0_GET_COUNT();
+            
+            IMU_read();
+            
+            while ((_CP0_GET_COUNT() - time) < 48000000/10) {;} //Keep it at 5HZ            
+            
             break;
         }
 
@@ -270,8 +276,6 @@ void APP_Tasks ( void )
         }
     }
 }
-
- 
 
 /*******************************************************************************
  End of File
