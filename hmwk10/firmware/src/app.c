@@ -71,9 +71,6 @@ int len, i = 0;
 int startTime = 0;
 signed short data_array[7];
 int sendData = 0;
-float MAF_AZ = 0;
-float FIR_AZ = 0;
-float IIR_AZ = 0;
 
 // *****************************************************************************
 /* Application Data
@@ -397,100 +394,6 @@ void IMU_read() {
 
 }
 
-float IIR_Filter() {
-    static int counter = 0;
-    static signed short current_value;
-    static signed short prev_value;
-    IMU_read();
-    
-    if (counter == 0) {
-        current_value = data_array[6];
-        prev_value = current_value;
-    }
-    else {
-        prev_value = current_value;
-        current_value = data_array[6];    
-    }
-    
-    if (counter == 99) {
-        counter = 0;
-    }
-    else
-    {
-        counter ++;   
-    }
-    
-    return (0.65*prev_value + 0.35*current_value);    
-    
-}
-
-float MAF_Filter() { //moving average filter
-    static int counter = 0;
-    int avg_length = 6;
-    static signed short average_array[6];
-    int j;
-    float sum;
-    IMU_read();
-    
-    if (counter == 0) {
-        for (j = 0; j < avg_length; j++) {
-            average_array[j] = data_array[6];
-        }
-    }
-    else {
-        average_array[counter%avg_length] = data_array[6];       
-    }
-    
-    if (counter == 99) {
-        counter = 0;        
-    }
-    else {
-        counter ++;
-    }
-    
-    //take the average and return the value
-    for (j = 0; j < avg_length; j++) {
-        sum += average_array[j];
-    }
-    
-    return sum/avg_length;
-    
-}
-
-float FIR_Filter() { //moving average filter
-    static int counter = 0;
-    int avg_length = 6;
-    static signed short average_array[6];
-    float weights[6] = {0.45,0.3,0.1,0.05,0.05,0.05};
-    int j;
-    float sum;
-    IMU_read();
-    
-    if (counter == 0) {
-        for (j = 0; j < avg_length; j++) {
-            average_array[j] = data_array[6];
-        }
-    }
-    else {
-        average_array[counter%avg_length] = data_array[6];       
-    }
-    
-    if (counter == 99) {
-        counter = 0;        
-    }
-    else {
-        counter ++;
-    }
-    
-    //take the average and return the value
-    for (j = 0; j < avg_length; j++) {
-        sum += weights[j]*average_array[j];
-    }
-    
-    return sum;
-    
-}
-
 void APP_Initialize(void) {
     /* Place the App state machine in its initial state. */
     appData.state = APP_STATE_INIT;
@@ -650,14 +553,12 @@ void APP_Tasks(void) {
             } else {
                 
                 if (sendData) {
-                    //IMU_read();
-                    MAF_AZ = MAF_Filter();
-                    FIR_AZ = FIR_Filter();
-                    IIR_AZ = IIR_Filter();
-                    len = sprintf(dataOut,"%0.2f,%0.2f,%0.2f,%0.2f\r\n",data_array[6]*0.0061, MAF_AZ*0.0061, FIR_AZ*0.0061, IIR_AZ*0.0061);
+                    IMU_read();
+                    len = sprintf(dataOut,"%d    RX: %0.2f    RY: %0.2f    RZ: %0.2f    \r\n      AX: %0.2f    AY: %0.2f    AZ: %0.2f    \r\n",i, data_array[1]*0.035, data_array[2]*0.035, data_array[3]*0.035, data_array[4]*0.0061, data_array[5]*0.0061, data_array[6]*0.0061);
+                    //len=sprintf(dataOut,"hello");
                     i++;
                     
-                    if (i == 100) {
+                    if (i == 101) {
                         i = 0;
                         sendData = 0;                        
                     }                                        
@@ -691,6 +592,8 @@ void APP_Tasks(void) {
             break;
     }
 }
+
+
 
 /*******************************************************************************
  End of File
