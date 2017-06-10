@@ -1,15 +1,12 @@
 /*******************************************************************************
   MPLAB Harmony Project Main Source File
-
   Company:
     Microchip Technology Inc.
   
   File Name:
     main.c
-
   Summary:
     This file contains the "main" function for an MPLAB Harmony project.
-
   Description:
     This file contains the "main" function for an MPLAB Harmony project.  The
     "main" function calls the "SYS_Initialize" function to initialize the state 
@@ -26,15 +23,12 @@
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
 Copyright (c) 2013-2014 released Microchip Technology Inc.  All rights reserved.
-
 //Microchip licenses to you the right to use, modify, copy and distribute
 Software only when embedded on a Microchip microcontroller or digital signal
 controller that is integrated into your product or third party product
 (pursuant to the sublicense terms in the accompanying license agreement).
-
 You should refer to the license agreement accompanying this Software for
 additional information regarding your rights and obligations.
-
 SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
 EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF
 MERCHANTABILITY, TITLE, NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -89,4 +83,3 @@ int main ( void )
 /*******************************************************************************
  End of File
 */
-

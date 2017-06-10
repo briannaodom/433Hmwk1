@@ -223,7 +223,9 @@ void APP_Initialize ( void );
  */
 
 void APP_Tasks( void );
-
+static float MAF(signed short *buffer);
+static float FIR(signed short *buffer);
+static void resetBuffer(signed short *buffer);
 
 #endif /* _APP_H */
 

@@ -51,13 +51,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "app.h"
 #include <stdio.h>
 #include <xc.h>
-
-#include "ILI9163C.h"
 #include "i2c_master_noint.h"
-
-#define SLAVE_ADDR 0b1101010
-
-
+#include "ILI9163C.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -65,12 +60,14 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************
 
+#define arrLength 14
+
 uint8_t APP_MAKE_BUFFER_DMA_READY dataOut[APP_READ_BUFFER_SIZE];
 uint8_t APP_MAKE_BUFFER_DMA_READY readBuffer[APP_READ_BUFFER_SIZE];
 int len, i = 0;
 int startTime = 0;
-signed short data_array[7];
-int sendData = 0;
+bool imuStart = false;
+unsigned char data[arrLength]; 
 
 // *****************************************************************************
 /* Application Data
@@ -305,95 +302,6 @@ bool APP_StateReset(void) {
     See prototype in app.h.
  */
 
-void IMU_init() {
-    //Need to change three registers
-    i2c_master_start(); //send start signal
-    i2c_master_send((SLAVE_ADDR << 1)); //Send the address with a 0 bit to write
-    i2c_master_send(0x10); //address register --> CTRL1_XL
-    i2c_master_send(0b10000010); //set CTRL1_XL to the right values
-    i2c_master_stop(); //Finished, stop the master
-    
-    i2c_master_start(); //Now we're going to change the CTRL2_G register
-    i2c_master_send((SLAVE_ADDR << 1));
-    i2c_master_send(0x11);
-    i2c_master_send(0b10001000);
-    i2c_master_stop();   
-    
-    i2c_master_start(); //Now we're going to change the CTRL3_C register
-    i2c_master_send((SLAVE_ADDR << 1));
-    i2c_master_send(0x12);
-    i2c_master_send(0x04);
-    i2c_master_stop();
-}
-
-signed short concatenate(unsigned char LOW,unsigned char HIGH) {
-    signed short concat_short;
-    concat_short = (HIGH << 8) | LOW;
-    
-    return concat_short;
-    
-}
-
-void LCD_print_array(signed short *array) { //Print out the numbers for debugging
-    char buffer[100];
-    sprintf(buffer,"AX: %.2f   ",array[4]*0.0061);
-    LCD_writeString(buffer,110,110,BLACK);
-    sprintf(buffer,"AY: %.2f   ",array[5]*0.0061);
-    LCD_writeString(buffer,110,100,BLACK);
-    sprintf(buffer,"AZ: %.2f   ",array[6]*0.0061);
-    LCD_writeString(buffer,110,90,BLACK);
-}
-
-void LCD_print_IMU_bars(float AX, float AY) {
-    LCD_drawBar(AX,64,64,BLACK,XDIR);
-    LCD_drawBar(AY,64,64,BLACK,YDIR);
-    /*
-    char buffer[100];
-    sprintf(buffer,"AX: %.2f   ",AX);
-    LCD_writeString(buffer,110,110,BLACK);
-     */
-}
-
-void IMU_read() {
-    //Going to read all seven values -- temp, position, and angle
-    //These values are each 16 bytes so we need to grab them as 8 bytes and then concatenate them
-    unsigned char master_read_L;
-    unsigned char master_read_H;
-    signed short concat_short;
-    //signed short data_array[7];
-    int i;
-    i2c_master_start();
-    i2c_master_send((SLAVE_ADDR << 1));
-    i2c_master_send(0x20); //We are going to start by reading from the temp register
-    i2c_master_restart();
-    i2c_master_send((SLAVE_ADDR << 1) | 1); //Gonna start reading
-    for (i = 0;i < 14; i++) {
-        if (i%2 == 0) { // if zero you are reading LOW data
-            master_read_L = i2c_master_recv();
-            i2c_master_ack(0); //Keep sending bytes
-        }
-        else { //you are reading HIGH data
-            master_read_H = i2c_master_recv();
-            concat_short = concatenate(master_read_L,master_read_H);
-            data_array[i/2] = concat_short;
-            if (i == 13) {
-                i2c_master_ack(1); //master wants no more readings
-            }
-            else {
-                i2c_master_ack(0); //Keep sending data
-            }
-        }
-    }
-    
-    i2c_master_stop();
-    //Now we have an array of shorts let's print them to the LCD screen
-    //LCD_print_array(data_array); //Used it for testing and debugging
-    
-    //Finally we can draw the bars on the screen
-    //LCD_print_IMU_bars(data_array[4]*0.0061, data_array[5]*0.0061);
-
-}
-
 void APP_Initialize(void) {
     /* Place the App state machine in its initial state. */
     appData.state = APP_STATE_INIT;
@@ -428,15 +336,8 @@ void APP_Initialize(void) {
 
     /* Set up the read buffer */
     appData.readBuffer = &readBuffer[0];
-    
-    
-    SPI1_init(); //Initialize the SPI communication for LCD
-    i2c_master_setup(); //Initialize I2C for IMU
-    LCD_init(); //Initialize LCD
-    IMU_init(); //Initialize IMU
-    
-    LCD_clearScreen(BLACK);
-
+    i2c_master_setup();
+    initExpander();
     startTime = _CP0_GET_COUNT();
 }
 
@@ -488,20 +389,20 @@ void APP_Tasks(void) {
              * else wait for the current read to complete */
 
             appData.state = APP_STATE_WAIT_FOR_READ_COMPLETE;
-            if (appData.isReadComplete == true) {
+            if (appData.isReadComplete == true) {//Computer has sent something to read
                 appData.isReadComplete = false;
                 appData.readTransferHandle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
 
                 USB_DEVICE_CDC_Read(USB_DEVICE_CDC_INDEX_0,
                         &appData.readTransferHandle, appData.readBuffer,
-                        APP_READ_BUFFER_SIZE);
+                        APP_READ_BUFFER_SIZE); // Loads text to appData.readBuffer. sscanf to get it. 
+                                               // Changes state to read complete
 
                 if (appData.readTransferHandle == USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID) {
                     appData.state = APP_STATE_ERROR;
                     break;
                 }
             }
-
             break;
 
         case APP_STATE_WAIT_FOR_READ_COMPLETE:
@@ -514,7 +415,7 @@ void APP_Tasks(void) {
             /* Check if a character was received or a switch was pressed.
              * The isReadComplete flag gets updated in the CDC event handler. */
 
-            if (appData.isReadComplete || _CP0_GET_COUNT() - startTime > (48000000 /200)) {
+            if (appData.isReadComplete || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 100)) {
                 appData.state = APP_STATE_SCHEDULE_WRITE;
             }
 
@@ -533,40 +434,53 @@ void APP_Tasks(void) {
             appData.isWriteComplete = false;
             appData.state = APP_STATE_WAIT_FOR_WRITE_COMPLETE;
 
-            //len = sprintf(dataOut, "%d\r\n", i);
-            //i++;
-            
             dataOut[0] = 0;
             len = 1;
-            
             if (appData.isReadComplete) {
-                
-                if (readBuffer[0] == 'r') {
-                    sendData = 1;
-                    dataOut[0] = 0;                    
+                if(readBuffer[0] == 'r')
+                {
+                    dataOut[0] = 0;
+                    imuStart = true;
                 }
-                
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
-                        &appData.writeTransferHandle,
-                        dataOut, 1,
+                        &appData.writeTransferHandle,dataOut, 1,
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
-            } else {
-                
-                if (sendData) {
-                    IMU_read();
-                    len = sprintf(dataOut,"%d    RX: %0.2f    RY: %0.2f    RZ: %0.2f    \r\n      AX: %0.2f    AY: %0.2f    AZ: %0.2f    \r\n",i, data_array[1]*0.035, data_array[2]*0.035, data_array[3]*0.035, data_array[4]*0.0061, data_array[5]*0.0061, data_array[6]*0.0061);
-                    //len=sprintf(dataOut,"hello");
-                    i++;
-                    
-                    if (i == 101) {
-                        i = 0;
-                        sendData = 0;                        
-                    }                                        
+//                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+//                        &appData.writeTransferHandle,
+//                        appData.readBuffer, 1,
+//                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+            } 
+            else {
+                if(imuStart)
+                {
+                    if(i == 0)
+                    {
+                        len = sprintf(dataOut, "\r\n%s\t|%7s\t|%7s\t|%7s\t|%7s\t|%7s\t|%7s\t\r\n","Index","ax","ay","az","gx","gy","gz");
+                        i++;
+                    }
+                    else
+                    {
+                        I2C_read_multiple(SLAVE_ADDR , OUT_TEMP_L, data, arrLength);
+                        signed short gyro_x = (data[3] << 8) | data[2];
+                        signed short gyro_y = (data[5] << 8) | data[4];
+                        signed short gyro_z = (data[7] << 8) | data[6];
+                        signed short accel_x = (data[9] << 8) | data[8];
+                        signed short accel_y = (data[11] << 8) | data[10];
+                        signed short accel_z = (data[13] << 8) | data[12];      
+                        len = sprintf(dataOut, "%d\t|%7.2f\t|%7.2f\t|%7.2f\t|%7.2f\t|%7.2f\t|%7.2f\t\r\n", i, accel_x*.061/100, accel_y*.061/100, accel_z*.061/100,
+                                gyro_x*.035, gyro_y*.035 , gyro_z*.035);
+                        i++;
+                    }
                 }
-                                                                
+                if(i == 101)
+                {
+                    i = 0;
+                    imuStart = false;
+                }
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
                         &appData.writeTransferHandle, dataOut, len,
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+                
                 startTime = _CP0_GET_COUNT();
             }
             break;

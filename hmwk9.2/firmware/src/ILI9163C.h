@@ -1,10 +1,8 @@
-// code for ILI9163C on the PIC32
+//code for ILI9163C on the PIC32
 // adapted from https://github.com/sumotoy/TFT_ILI9163C/blob/master/TFT_ILI9163C.cpp
 
 #ifndef ILI9163C_H__
 #define ILI9163C_H__
-
-enum direction {XDIR,YDIR};
 
 // lookup table for all of the ascii characters
 static const char ASCII[96][5] = {
@@ -164,7 +162,6 @@ static const char ASCII[96][5] = {
 #define	RED       0xF800
 #define	GREEN     0x07E0
 #define CYAN      0x07FF
-#define BACKGROUND 0x07FF//CYAN
 #define MAGENTA   0xF81F
 #define YELLOW    0xFFE0
 
@@ -179,10 +176,11 @@ void LCD_init(void); // send the initializations to the LCD
 void LCD_drawPixel(unsigned short, unsigned short, unsigned short); // set the x,y pixel to a color
 void LCD_setAddr(unsigned short, unsigned short, unsigned short, unsigned short); // set the memory address you are writing to
 void LCD_clearScreen(unsigned short); // set the color of every pixel
-void LCD_writeByte(unsigned short, unsigned short, unsigned short, unsigned short);
-void LCD_writeChar(char, unsigned short, unsigned short, unsigned short);
-void LCD_writeString(char *, unsigned short, unsigned short, unsigned short);
-void LCD_drawBar(int, unsigned short, unsigned short, unsigned short,int);
 
+void LCD_char(char character, unsigned short x0, unsigned short y0, unsigned short c1, unsigned short c2);
+void LCD_drawByte(unsigned int byte, unsigned short x0, unsigned short y0, unsigned short c1, unsigned short c2);
+void LCD_string(char* string, unsigned short x0, unsigned short y0, unsigned short c1, unsigned short c2);
+void LCD_barX(unsigned short x0, unsigned short y0, int length, int width, int max, unsigned short c1, unsigned short c2);
+void LCD_barY(unsigned short x0, unsigned short y0, int length, int width, int max, unsigned short c1, unsigned short c2);
 
 #endif
